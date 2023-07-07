@@ -12,6 +12,7 @@
 /build
 out
 .next
+src/utils/variables/s-variables.js
 
 # misc
 .DS_Store
