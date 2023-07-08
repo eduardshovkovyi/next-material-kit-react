@@ -9,6 +9,26 @@ import {
   Unstable_Grid2 as Grid,
 } from "@mui/material";
 import CurrencyDollarIcon from "@heroicons/react/24/solid/CurrencyDollarIcon";
+import CubeIcon from "@heroicons/react/24/solid/CubeIcon";
+import ArrowTrendingUpIcon from "@heroicons/react/24/solid/ArrowTrendingUpIcon";
+import BanknotesIcon from "@heroicons/react/24/solid/BanknotesIcon";
+import BookmarkSquareIcon from "@heroicons/react/24/solid/BookmarkSquareIcon";
+import BuildingLibraryIcon from "@heroicons/react/24/solid/BuildingLibraryIcon";
+
+const icons = [
+  <CurrencyDollarIcon />,
+  <CubeIcon />,
+  <ArrowTrendingUpIcon />,
+  <BanknotesIcon />,
+  <BookmarkSquareIcon />,
+  <BuildingLibraryIcon />,
+  <CurrencyDollarIcon />,
+  <CubeIcon />,
+  <ArrowTrendingUpIcon />,
+  <BanknotesIcon />,
+  <BookmarkSquareIcon />,
+  <BuildingLibraryIcon />,
+];
 
 import { useDataContext } from "src/providers/docs-provider";
 import { convertBoxesData } from "./config";
@@ -18,7 +38,7 @@ export const BoxesBlock = () => {
   let boxesData = convertBoxesData(data?.boxesData);
 
   return boxesData?.length
-    ? boxesData.map((item) => (
+    ? boxesData.map((item, index) => (
         <Grid xs={12} sm={6} lg={4} key={item[1]}>
           <Card>
             <CardContent>
@@ -36,19 +56,17 @@ export const BoxesBlock = () => {
                 </Stack>
                 <Avatar
                   sx={{
-                    backgroundColor: "error.main",
+                    backgroundColor: "primary.main",
                     height: 56,
                     width: 56,
                   }}
                 >
-                  <SvgIcon>
-                    <CurrencyDollarIcon />
-                  </SvgIcon>
+                  <SvgIcon>{icons[index]}</SvgIcon>
                 </Avatar>
               </Stack>
             </CardContent>
           </Card>
         </Grid>
       ))
-    : "";
+    : null;
 };

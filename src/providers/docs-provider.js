@@ -55,6 +55,10 @@ export const DocxProvider = ({ children }) => {
           initialData?.values?.length &&
           initialData?.values?.filter((item) => item.includes(user?.email))[0];
         setDataDocs(data);
+        dispatch({
+          type: HANDLERS.SET_DATA,
+          payload: { iframeLink: data[3] },
+        });
       })
       .catch((error) => {
         console.error("Error on the first query:", error);
