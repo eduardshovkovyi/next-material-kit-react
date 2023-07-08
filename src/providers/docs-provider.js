@@ -1,4 +1,10 @@
-import { createContext, useContext, useReducer, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useState,
+} from "react";
 import axios from "axios";
 
 import { SPREAD_SHEET_ID, API_KEY } from "../utils/variables/s-variables";
@@ -36,57 +42,83 @@ export const DataContext = createContext(undefined);
 export const DocxProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { user } = useContext(AuthContext);
+  const [dataDocs, setDataDocs] = useState([]);
+
+  const fetchData = () => {
+    axios
+      .get(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREAD_SHEET_ID}/values/userData!A1:E?key=${API_KEY}`
+      )
+      .then((response) => {
+        const initialData = response.data;
+        const data =
+          initialData?.values?.length &&
+          initialData?.values?.filter((item) => item.includes(user?.email))[0];
+        setDataDocs(data);
+      })
+      .catch((error) => {
+        console.error("Error on the first query:", error);
+      });
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      let initialData;
-      try {
-        const response = await axios.get(
-          `https://sheets.googleapis.com/v4/spreadsheets/${SPREAD_SHEET_ID}/values/userData!A1:E?key=${API_KEY}`
-        );
-        initialData = response.data;
-      } catch (error) {
-        console.error("Error on the first query:", error);
-        dispatch({ type: HANDLERS.INITIALIZE });
-        return;
-      }
-      let data = initialData?.values?.filter((item) =>
-        item.includes(user?.email)
-      )[0];
+    if (user?.email) {
+      fetchData();
+    }
+  }, [user?.email]);
 
-      if (!user?.email) {
-        return null;
-      } else {
-        try {
-          const response = await axios.get(
-            `https://sheets.googleapis.com/v4/spreadsheets/${SPREAD_SHEET_ID}/values/${data[1]}!A:Z?key=${API_KEY}`
-          );
+  const fetchDataTable = () => {
+    axios
+      .get(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREAD_SHEET_ID}/values/${dataDocs[1]}!A:Z?key=${API_KEY}`
+      )
+      .then((response) => {
+        dispatch({
+          type: HANDLERS.SET_DATA,
+          payload: { tableData: response?.data?.values },
+        });
+      })
+      .catch((error) => {
+        console.error("Error on the second query:", error);
+      });
+  };
+
+  useEffect(() => {
+    if (dataDocs?.length) {
+      fetchDataTable();
+    }
+  }, [dataDocs]);
+
+  const fetchDataBoxes = () => {
+    dispatch({
+      type: HANDLERS.START_LOADING,
+    });
+
+    axios
+      .get(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREAD_SHEET_ID}/values/${dataDocs[2]}!A:Z?key=${API_KEY}`
+      )
+      .then((response) => {
+        dispatch({
+          type: HANDLERS.SET_DATA,
+          payload: { boxesData: response?.data?.values },
+        });
+        setTimeout(() => {
           dispatch({
-            type: HANDLERS.SET_DATA,
-            payload: { tableData: response?.data?.values },
+            type: HANDLERS.STOP_LOADING,
           });
-        } catch (error) {
-          console.error("Error on the second query:", error);
-        }
+        }, 10000);
+      })
+      .catch((error) => {
+        console.error("Error on the third query:", error);
+      });
+  };
 
-        try {
-          const response = await axios.get(
-            `https://sheets.googleapis.com/v4/spreadsheets/${SPREAD_SHEET_ID}/values/${data[2]}!A:Z?key=${API_KEY}`
-          );
-          dispatch({
-            type: HANDLERS.SET_DATA,
-            payload: { boxesData: response?.data?.values },
-          });
-        } catch (error) {
-          console.error("Error on the third query:", error);
-        }
-      }
-
-      dispatch({ type: HANDLERS.INITIALIZE });
-    };
-
-    fetchData();
-  }, [user]);
+  useEffect(() => {
+    if (dataDocs?.length) {
+      fetchDataBoxes();
+    }
+  }, [dataDocs]);
 
   const setData = (data) => {
     dispatch({ type: HANDLERS.SET_DATA, payload: data });
