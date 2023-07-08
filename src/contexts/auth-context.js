@@ -6,11 +6,21 @@ import {
   useRef,
 } from "react";
 import PropTypes from "prop-types";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { getDatabase, ref, update } from "firebase/database";
+import { useRouter } from "next/router";
+
+import { app, auth } from "../guards/firebase";
+import LoadingComponent from "../components/loader";
+
+const db = getDatabase(app);
 
 const HANDLERS = {
   INITIALIZE: "INITIALIZE",
   SIGN_IN: "SIGN_IN",
   SIGN_OUT: "SIGN_OUT",
+  START_LOADING: "START_LOADING",
+  STOP_LOADING: "STOP_LOADING",
 };
 
 const initialState = {
@@ -20,6 +30,18 @@ const initialState = {
 };
 
 const handlers = {
+  [HANDLERS.START_LOADING]: (state) => {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  },
+  [HANDLERS.STOP_LOADING]: (state) => {
+    return {
+      ...state,
+      isLoading: false,
+    };
+  },
   [HANDLERS.INITIALIZE]: (state, action) => {
     const user = action.payload;
 
@@ -65,8 +87,8 @@ export const AuthContext = createContext({ undefined });
 export const AuthProvider = (props) => {
   const { children } = props;
   const [state, dispatch] = useReducer(reducer, initialState);
+  const router = useRouter();
   const initialized = useRef(false);
-
   const initialize = async () => {
     // Prevent from calling twice in development mode with React.StrictMode enabled
     if (initialized.current) {
@@ -78,19 +100,16 @@ export const AuthProvider = (props) => {
     let isAuthenticated = false;
 
     try {
-      isAuthenticated =
-        window.sessionStorage.getItem("authenticated") === "true";
+      isAuthenticated = window.localStorage.getItem("authenticated") === "true";
     } catch (err) {
       console.error(err);
     }
 
     if (isAuthenticated) {
-      const user = {
-        id: "5e86809283e28b96d2d38537",
-        avatar: "/assets/avatars/avatar-anika-visser.png",
-        name: "Anika Visser",
-        email: "test@gmail.com",
-      };
+      if (router.pathname === "/auth/login") {
+        router.push("/");
+      }
+      const user = JSON.parse(window.localStorage.getItem("user"));
 
       dispatch({
         type: HANDLERS.INITIALIZE,
@@ -111,52 +130,25 @@ export const AuthProvider = (props) => {
     []
   );
 
-  const skip = () => {
-    try {
-      window.sessionStorage.setItem("authenticated", "true");
-    } catch (err) {
-      console.error(err);
-    }
-
-    const user = {
-      id: "5e86809283e28b96d2d38537",
-      avatar: "/assets/avatars/avatar-anika-visser.png",
-      name: "Anika Visser",
-      email: "test@gmail.com",
-    };
-
-    dispatch({
-      type: HANDLERS.SIGN_IN,
-      payload: user,
-    });
-  };
-
   const signIn = async (email, password) => {
-    if (email !== "test@gmail.com" || password !== "Password123!") {
-      throw new Error("Please check your email and password");
-    }
-
-    try {
-      window.sessionStorage.setItem("authenticated", "true");
-    } catch (err) {
-      console.error(err);
-    }
-
-    const user = {
-      id: "5e86809283e28b96d2d38537",
-      avatar: "/assets/avatars/avatar-anika-visser.png",
-      name: "Anika Visser",
-      email: "anika.visser@devias.io",
-    };
-
-    dispatch({
-      type: HANDLERS.SIGN_IN,
-      payload: user,
-    });
-  };
-
-  const signUp = async (email, name, password) => {
-    throw new Error("Sign up is not implemented");
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        const userData = {
+          last_login: Date.now(),
+        };
+        update(ref(db, "users/" + user.uid), userData);
+        router.push("/");
+        window.localStorage.setItem("authenticated", "true");
+        window.localStorage.setItem("user", JSON.stringify(user));
+        dispatch({
+          type: HANDLERS.SIGN_IN,
+          payload: user,
+        });
+      })
+      .catch((error) => {
+        console.log("errorMessage", error.message);
+      });
   };
 
   const signOut = () => {
@@ -165,13 +157,15 @@ export const AuthProvider = (props) => {
     });
   };
 
+  if (state.isLoading) {
+    return <LoadingComponent />;
+  }
+
   return (
     <AuthContext.Provider
       value={{
         ...state,
-        skip,
         signIn,
-        signUp,
         signOut,
       }}
     >
