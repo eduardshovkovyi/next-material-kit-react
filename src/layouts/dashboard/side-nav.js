@@ -2,12 +2,15 @@ import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import PropTypes from "prop-types";
 import ChevronUpDownIcon from "@heroicons/react/24/solid/ChevronUpDownIcon";
+import MoonIcon from "@heroicons/react/24/solid/MoonIcon";
+
 import {
   Box,
   Divider,
   Drawer,
   Stack,
   SvgIcon,
+  Switch,
   Typography,
   useMediaQuery,
 } from "@mui/material";
@@ -17,9 +20,14 @@ import { items } from "./config";
 import { SideNavItem } from "./side-nav-item";
 
 export const SideNav = (props) => {
-  const { open, onClose } = props;
+  const { open, onClose, isDarkMode, setDarkMode } = props;
   const pathname = usePathname();
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up("lg"));
+
+  const handleDarkMode = () => {
+    window.localStorage.setItem("isDarkMode", !isDarkMode);
+    setDarkMode((prev) => !prev);
+  };
 
   const content = (
     <Scrollbar
@@ -52,32 +60,7 @@ export const SideNav = (props) => {
           >
             <Logo />
           </Box>
-          <Box
-            sx={{
-              alignItems: "center",
-              backgroundColor: "rgba(255, 255, 255, 0.04)",
-              borderRadius: 1,
-              cursor: "pointer",
-              display: "flex",
-              justifyContent: "space-between",
-              mt: 2,
-              p: "12px",
-            }}
-          >
-            <div>
-              <Typography color="inherit" variant="subtitle1">
-                Devias
-              </Typography>
-              <Typography color="neutral.400" variant="body2">
-                Production
-              </Typography>
-            </div>
-            <SvgIcon fontSize="small" sx={{ color: "neutral.500" }}>
-              <ChevronUpDownIcon />
-            </SvgIcon>
-          </Box>
         </Box>
-        <Divider sx={{ borderColor: "neutral.700" }} />
         <Box
           component="nav"
           sx={{
@@ -111,6 +94,20 @@ export const SideNav = (props) => {
               );
             })}
           </Stack>
+        </Box>
+        <Divider sx={{ borderColor: "neutral.700" }} />
+        <Box sx={{ p: 3, display: "flex", alignItems: "center" }}>
+          <SvgIcon fontSize="small" sx={{ color: "neutral.500" }}>
+            <MoonIcon />
+          </SvgIcon>
+          <Typography sx={{ color: "neutral.400", mr: 2, ml: 2 }}>
+            מצב לילה
+          </Typography>
+          <Switch
+            checked={isDarkMode}
+            onChange={handleDarkMode}
+            name="darkModeToggle"
+          />
         </Box>
       </Box>
     </Scrollbar>

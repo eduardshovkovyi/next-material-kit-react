@@ -24,7 +24,7 @@ const LayoutContainer = styled("div")({
 });
 
 export const Layout = withAuthGuard((props) => {
-  const { children } = props;
+  const { children, isDarkMode, setDarkMode } = props;
   const pathname = usePathname();
   const [openNav, setOpenNav] = useState(false);
 
@@ -44,8 +44,17 @@ export const Layout = withAuthGuard((props) => {
 
   return (
     <>
-      <TopNav onNavOpen={() => setOpenNav(true)} />
-      <SideNav onClose={() => setOpenNav(false)} open={openNav} />
+      <TopNav
+        isDarkMode={isDarkMode}
+        setDarkMode={setDarkMode}
+        onNavOpen={() => setOpenNav(true)}
+      />
+      <SideNav
+        isDarkMode={isDarkMode}
+        setDarkMode={setDarkMode}
+        onClose={() => setOpenNav(false)}
+        open={openNav}
+      />
       <LayoutRoot>
         <LayoutContainer>{children}</LayoutContainer>
       </LayoutRoot>
