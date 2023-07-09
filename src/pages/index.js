@@ -21,13 +21,13 @@ const Page = () => (
       }}
     >
       <Container maxWidth="xl">
-        <Grid container spacing={3}>
+        <Grid container spacing={3} mb={3}>
           <BoxesBlock />
         </Grid>
-        <Grid xs={12}>
+        <Grid xs={12} mb={4}>
           <OverviewLatestOrders />
         </Grid>
-        <Grid xs={12} lg={8}>
+        <Grid xs={12} lg={8} mb={4}>
           <OverviewSales />
         </Grid>
         <Grid xs={12} md={6} lg={4}>
@@ -38,6 +38,10 @@ const Page = () => (
   </>
 );
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page, isDarkMode, setDarkMode) => (
+  <DashboardLayout isDarkMode={isDarkMode} setDarkMode={setDarkMode}>
+    {page}
+  </DashboardLayout>
+);
 
 export default Page;

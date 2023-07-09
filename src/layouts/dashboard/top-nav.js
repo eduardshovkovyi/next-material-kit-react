@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import Bars3Icon from "@heroicons/react/24/solid/Bars3Icon";
-import MagnifyingGlassIcon from "@heroicons/react/24/solid/MagnifyingGlassIcon";
+import SunIcon from "@heroicons/react/24/solid/SunIcon";
+import MoonIcon from "@heroicons/react/24/solid/MoonIcon";
 import {
   Avatar,
   Box,
@@ -57,15 +58,8 @@ export const TopNav = (props) => {
                 height: 40,
                 width: 40,
               }}
-              src="/assets/avatars/avatar-anika-visser.png"
+              src="/assets/profile.jpg"
             />
-            <Tooltip title="Search">
-              <IconButton>
-                <SvgIcon fontSize="small">
-                  <MagnifyingGlassIcon />
-                </SvgIcon>
-              </IconButton>
-            </Tooltip>
           </Stack>
           <Stack alignItems="center" direction="row" spacing={2}>
             {!lgUp && (

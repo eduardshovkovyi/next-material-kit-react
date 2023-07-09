@@ -12,19 +12,26 @@ import { createEmotionCache } from "src/utils/create-emotion-cache";
 import { DocxProvider } from "src/providers/docs-provider";
 
 import "simplebar-react/dist/simplebar.min.css";
+import {useEffect, useState} from "react";
 
 const clientSideEmotionCache = createEmotionCache();
 
 const SplashScreen = () => null;
 
 const App = (props) => {
+  const [isDarkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    setDarkMode(window.localStorage.getItem("isDarkMode")  === "true" || false);
+  }, []);
+
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
 
   useNProgress();
 
   const getLayout = Component.getLayout ?? ((page) => page);
 
-  const theme = createTheme();
+  const theme = createTheme(isDarkMode);
 
   return (
     <CacheProvider value={emotionCache}>
@@ -42,7 +49,7 @@ const App = (props) => {
                   auth.isLoading ? (
                     <SplashScreen />
                   ) : (
-                    getLayout(<Component {...pageProps} />)
+                    getLayout(<Component {...pageProps} />, isDarkMode, setDarkMode)
                   )
                 }
               </AuthConsumer>
