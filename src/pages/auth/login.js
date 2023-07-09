@@ -1,17 +1,23 @@
+import { useContext } from "react";
 import Head from "next/head";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Box, Button, Stack, TextField, Typography } from "@mui/material";
+
 import { useAuth } from "src/hooks/use-auth";
 import { Layout as AuthLayout } from "src/layouts/auth/layout";
+import { SnackbarContext } from "src/contexts/snackbar-context";
+import SnackBarComponent from "src/components/alert";
 
 const Page = () => {
   const auth = useAuth();
+  const { showSuccess, showError, openSnackbar, message, isError } =
+    useContext(SnackbarContext);
 
   const formik = useFormik({
     initialValues: {
-      email: "test123@gmail.com",
-      password: "123456",
+      email: "",
+      password: "",
       submit: null,
     },
     validationSchema: Yup.object({
@@ -24,11 +30,12 @@ const Page = () => {
     onSubmit: async (values, helpers) => {
       try {
         await auth.signIn(values.email, values.password);
-        // router.push("/");
+        showSuccess("Successfully login!");
       } catch (err) {
         helpers.setStatus({ success: false });
         helpers.setErrors({ submit: err.message });
         helpers.setSubmitting(false);
+        showError(err);
       }
     },
   });
@@ -102,6 +109,9 @@ const Page = () => {
           </div>
         </Box>
       </Box>
+      {openSnackbar && (
+        <SnackBarComponent message={message} isError={isError} />
+      )}
     </>
   );
 };

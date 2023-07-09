@@ -1,8 +1,8 @@
 import NextLink from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import PropTypes from "prop-types";
-import ChevronUpDownIcon from "@heroicons/react/24/solid/ChevronUpDownIcon";
 import MoonIcon from "@heroicons/react/24/solid/MoonIcon";
+import ArrowLeftOnRectangleIcon from "@heroicons/react/24/solid/ArrowLeftOnRectangleIcon";
 
 import {
   Box,
@@ -18,16 +18,29 @@ import { Logo } from "src/components/logo";
 import { Scrollbar } from "src/components/scrollbar";
 import { items } from "./config";
 import { SideNavItem } from "./side-nav-item";
+import { useDataContext } from "src/providers/docs-provider";
+import { useCallback } from "react";
+import { useAuth } from "../../hooks/use-auth";
 
 export const SideNav = (props) => {
   const { open, onClose, isDarkMode, setDarkMode } = props;
   const pathname = usePathname();
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up("lg"));
+  const { data } = useDataContext();
+  const router = useRouter();
+  const auth = useAuth();
 
   const handleDarkMode = () => {
     window.localStorage.setItem("isDarkMode", !isDarkMode);
     setDarkMode((prev) => !prev);
   };
+
+  const handleSignOut = useCallback(() => {
+    auth.signOut();
+    router.push("/auth/login");
+    window.localStorage.setItem("authenticated", "false");
+    window.localStorage.setItem("user", null);
+  }, [onClose, auth, router]);
 
   const content = (
     <Scrollbar
@@ -62,6 +75,7 @@ export const SideNav = (props) => {
           </Box>
         </Box>
         <Box
+          mt={2}
           component="nav"
           sx={{
             flexGrow: 1,
@@ -79,6 +93,10 @@ export const SideNav = (props) => {
             }}
           >
             {items.map((item) => {
+              if (data?.isAdmin === false && item.path === "/account") {
+                return null;
+              }
+
               const active = item.path ? pathname === item.path : false;
 
               return (
@@ -96,7 +114,22 @@ export const SideNav = (props) => {
           </Stack>
         </Box>
         <Divider sx={{ borderColor: "neutral.700" }} />
-        <Box sx={{ p: 3, display: "flex", alignItems: "center" }}>
+        <Box
+          sx={{
+            pl: 3,
+            pt: 3,
+            display: "flex",
+            alignItems: "center",
+            cursor: "pointer",
+          }}
+          onClick={handleSignOut}
+        >
+          <SvgIcon fontSize="small" sx={{ color: "neutral.500" }}>
+            <ArrowLeftOnRectangleIcon />
+          </SvgIcon>
+          <Typography sx={{ color: "neutral.400", ml: 2 }}>התנתקות</Typography>
+        </Box>
+        <Box sx={{ p: 3, pt: 2, display: "flex", alignItems: "center" }}>
           <SvgIcon fontSize="small" sx={{ color: "neutral.500" }}>
             <MoonIcon />
           </SvgIcon>

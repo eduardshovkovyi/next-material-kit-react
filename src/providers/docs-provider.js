@@ -13,6 +13,7 @@ import { AuthContext } from "../contexts/auth-context";
 const HANDLERS = {
   INITIALIZE: "INITIALIZE",
   SET_DATA: "SET_DATA",
+  RESET_DATA: "RESET_DATA",
 };
 
 const initialState = {
@@ -32,6 +33,10 @@ const handlers = {
       ...action.payload,
     },
   }),
+  [HANDLERS.RESET_DATA]: (state) => ({
+    ...state,
+    data: { ...initialState.data }, // здесь initialState.data - ваше начальное состояние данных
+  }),
 };
 
 const reducer = (state, action) =>
@@ -47,7 +52,7 @@ export const DocxProvider = ({ children }) => {
   const fetchData = () => {
     axios
       .get(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SPREAD_SHEET_ID}/values/userData!A1:E?key=${API_KEY}`
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREAD_SHEET_ID}/values/userData!A1:F?key=${API_KEY}`
       )
       .then((response) => {
         const initialData = response.data;
@@ -56,16 +61,23 @@ export const DocxProvider = ({ children }) => {
           initialData?.values?.filter((item) => item.includes(user?.email))[0];
         setDataDocs(data);
 
-        dispatch({
-          type: HANDLERS.SET_DATA,
-          payload: {
-            iframeLinks: {
-              iframeLink1: data[3],
-              iframeLink2: data[4],
+        if (data?.length) {
+          dispatch({
+            type: HANDLERS.SET_DATA,
+            payload: {
+              iframeLinks: {
+                iframeLink1: data[3],
+                iframeLink2: data[4],
+              },
+              email: data[0],
+              isAdmin: !!data[5],
             },
-            email: data[0],
-          },
-        });
+          });
+        } else {
+          dispatch({
+            type: HANDLERS.RESET_DATA,
+          });
+        }
       })
       .catch((error) => {
         console.error("Error on the first query:", error);

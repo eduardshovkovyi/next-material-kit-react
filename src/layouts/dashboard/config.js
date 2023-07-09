@@ -1,8 +1,8 @@
 import ChartBarIcon from "@heroicons/react/24/solid/ChartBarIcon";
-import CogIcon from "@heroicons/react/24/solid/CogIcon";
-import ShoppingBagIcon from "@heroicons/react/24/solid/ShoppingBagIcon";
+import HomeIcon from "@heroicons/react/24/solid/HomeIcon";
+
+import TableCellsIcon from "@heroicons/react/24/solid/TableCellsIcon";
 import UserIcon from "@heroicons/react/24/solid/UserIcon";
-import UsersIcon from "@heroicons/react/24/solid/UsersIcon";
 import { SvgIcon } from "@mui/material";
 
 export const items = [
@@ -11,7 +11,7 @@ export const items = [
     path: "/",
     icon: (
       <SvgIcon fontSize="small">
-        <ChartBarIcon />
+        <HomeIcon />
       </SvgIcon>
     ),
   },
@@ -20,7 +20,7 @@ export const items = [
     path: "/customers",
     icon: (
       <SvgIcon fontSize="small">
-        <UsersIcon />
+        <TableCellsIcon />
       </SvgIcon>
     ),
   },
@@ -29,7 +29,7 @@ export const items = [
     path: "/companies",
     icon: (
       <SvgIcon fontSize="small">
-        <ShoppingBagIcon />
+        <ChartBarIcon />
       </SvgIcon>
     ),
   },
@@ -39,15 +39,6 @@ export const items = [
     icon: (
       <SvgIcon fontSize="small">
         <UserIcon />
-      </SvgIcon>
-    ),
-  },
-  {
-    title: "URBAN AI GIS",
-    path: "/settings",
-    icon: (
-      <SvgIcon fontSize="small">
-        <CogIcon />
       </SvgIcon>
     ),
   },

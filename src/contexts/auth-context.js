@@ -6,8 +6,11 @@ import {
   useRef,
 } from "react";
 import PropTypes from "prop-types";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { getDatabase, ref, update } from "firebase/database";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
+import { getDatabase, ref, update, set } from "firebase/database";
 import { useRouter } from "next/router";
 
 import { app, auth } from "../guards/firebase";
@@ -130,30 +133,52 @@ export const AuthProvider = (props) => {
     []
   );
 
-  const signIn = async (email, password) => {
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        const userData = {
-          last_login: Date.now(),
-        };
-        update(ref(db, "users/" + user.uid), userData);
-        router.push("/");
-        window.localStorage.setItem("authenticated", "true");
-        window.localStorage.setItem("user", JSON.stringify(user));
-        dispatch({
-          type: HANDLERS.SIGN_IN,
-          payload: user,
+  const signIn = (email, password) => {
+    return new Promise((resolve, reject) => {
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          const userData = {
+            last_login: Date.now(),
+          };
+          update(ref(db, "users/" + user.uid), userData);
+          router.push("/");
+          window.localStorage.setItem("authenticated", "true");
+          window.localStorage.setItem("user", JSON.stringify(user));
+          dispatch({
+            type: HANDLERS.SIGN_IN,
+            payload: user,
+          });
+          resolve(user);
+        })
+        .catch((error) => {
+          reject(error.message);
         });
-      })
-      .catch((error) => {
-        console.log("errorMessage", error.message);
-      });
+    });
   };
 
   const signOut = () => {
     dispatch({
       type: HANDLERS.SIGN_OUT,
+    });
+  };
+
+  const signUp = (full_name, email, password) => {
+    return new Promise((resolve, reject) => {
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          const userData = {
+            email: email,
+            password: password,
+            full_name: full_name,
+          };
+          set(ref(db, "users/" + user.uid), userData);
+          resolve("User created successfully");
+        })
+        .catch((error) => {
+          reject(error.message);
+        });
     });
   };
 
@@ -167,6 +192,7 @@ export const AuthProvider = (props) => {
         ...state,
         signIn,
         signOut,
+        signUp,
       }}
     >
       {children}
