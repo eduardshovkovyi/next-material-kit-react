@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
 import { Card, CardContent } from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
+import { useTheme } from "@mui/material/styles";
 import { Chart } from "src/components/chart";
 import { useDataContext } from "src/providers/docs-provider";
-import { formatData } from "./config";
+import { formatData, getCategories } from "./config";
 
 const useChartOptions = () => {
   const theme = useTheme();
@@ -17,8 +17,12 @@ const useChartOptions = () => {
       },
     },
     colors: [
+      theme.palette.secondary.main,
+      theme.palette.error.main,
+      theme.palette.warning.main,
       theme.palette.primary.main,
-      alpha(theme.palette.primary.main, 0.25),
+      theme.palette.info.main,
+      theme.palette.success.main,
     ],
     dataLabels: {
       enabled: false,
@@ -44,9 +48,9 @@ const useChartOptions = () => {
     legend: {
       show: true,
       position: "top",
-      horizontalAlign: "center", // 'left', 'center', 'right'
+      horizontalAlign: "center",
       floating: false,
-      offsetY: 0, // может потребоваться отрегулировать на основе вашего дизайна
+      offsetY: 0,
       labels: {
         colors: theme.palette.text.primary,
       },
@@ -108,11 +112,12 @@ export const OverviewSales = () => {
   const chartOptions = useChartOptions();
   let newChartOptions = [];
   let newTableData = [];
+  const legendNames = ["Name1", "Name2", "Name3", "Name4", "Name5"];
 
   if (tableData?.length) {
     newChartOptions = {
       ...chartOptions,
-      xaxis: { ...chartOptions.xaxis, categories: tableData[0] },
+      xaxis: { ...chartOptions.xaxis, categories: getCategories(tableData) },
     };
     newTableData = formatData(tableData);
   }

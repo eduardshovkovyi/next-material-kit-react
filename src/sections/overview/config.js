@@ -15,3 +15,16 @@ export const formatData = (data) => {
 
   return formattedData;
 };
+
+export const removeFirstElementsAndFormat = (arr) => {
+  return arr.slice(1).map((innerArr) => innerArr.slice(1).map(Number));
+};
+
+export const checkAllZeros = (arr) => {
+  return arr.every((num) => num === 0);
+};
+
+export const getCategories = (data) => {
+  const newSourceArray = data.slice(1);
+  return newSourceArray.map((item) => item[0]);
+};

@@ -23,19 +23,15 @@ const Page = () => (
       <Container maxWidth="xl">
         <Grid container spacing={3}>
           <BoxesBlock />
-          <Grid xs={12}>
-            <OverviewLatestOrders />
-          </Grid>
+        </Grid>
+        <Grid xs={12}>
+          <OverviewLatestOrders />
         </Grid>
         <Grid xs={12} lg={8}>
           <OverviewSales />
         </Grid>
         <Grid xs={12} md={6} lg={4}>
-          <OverviewTraffic
-            chartSeries={[63, 15, 22]}
-            labels={["Desktop", "Tablet", "Phone"]}
-            sx={{ height: "100%" }}
-          />
+          <OverviewTraffic />
         </Grid>
       </Container>
     </Box>

@@ -7,7 +7,7 @@ const Page = () => {
   return (
     <div>
       <iframe
-        src={data?.iframeLink}
+        src={data?.iframeLinks?.iframeLink1}
         title="rosh"
         width="100%"
         height="1144"
