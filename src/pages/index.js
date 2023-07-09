@@ -5,13 +5,15 @@ import { OverviewLatestOrders } from "src/sections/overview/overview-latest-orde
 import { OverviewSales } from "src/sections/overview/overview-sales";
 import { OverviewTraffic } from "src/sections/overview/overview-traffic";
 import { BoxesBlock } from "src/sections/overview/boxes-block";
-import { useDataContext } from "../providers/docs-provider";
-
-const now = new Date();
+import { useDataContext } from "src/providers/docs-provider";
+import LoadingComponent from "src/components/loader";
 
 const Page = () => {
-  const { data } = useDataContext();
-
+  const { data, isLoading } = useDataContext();
+  console.log("isLoading", isLoading);
+  if (isLoading) {
+    return <LoadingComponent />;
+  }
   return (
     <>
       <Head>
