@@ -55,6 +55,17 @@ export const DocxProvider = ({ children }) => {
           initialData?.values?.length &&
           initialData?.values?.filter((item) => item.includes(user?.email))[0];
         setDataDocs(data);
+
+        dispatch({
+          type: HANDLERS.SET_DATA,
+          payload: {
+            iframeLinks: {
+              iframeLink1: data[3],
+              iframeLink2: data[4],
+            },
+            email: data[0],
+          },
+        });
       })
       .catch((error) => {
         console.error("Error on the first query:", error);
@@ -83,12 +94,6 @@ export const DocxProvider = ({ children }) => {
       });
   };
 
-  useEffect(() => {
-    if (dataDocs?.length) {
-      fetchDataTable();
-    }
-  }, [dataDocs]);
-
   const fetchDataBoxes = () => {
     dispatch({
       type: HANDLERS.START_LOADING,
@@ -116,6 +121,7 @@ export const DocxProvider = ({ children }) => {
 
   useEffect(() => {
     if (dataDocs?.length) {
+      fetchDataTable();
       fetchDataBoxes();
     }
   }, [dataDocs]);

@@ -1,7 +1,9 @@
 import PropTypes from "prop-types";
 import { Card, CardContent } from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
+import { useTheme } from "@mui/material/styles";
 import { Chart } from "src/components/chart";
+import { useDataContext } from "src/providers/docs-provider";
+import { formatData, getCategories } from "./config";
 
 const useChartOptions = () => {
   const theme = useTheme();
@@ -15,8 +17,12 @@ const useChartOptions = () => {
       },
     },
     colors: [
+      theme.palette.secondary.main,
+      theme.palette.error.main,
+      theme.palette.warning.main,
       theme.palette.primary.main,
-      alpha(theme.palette.primary.main, 0.25),
+      theme.palette.info.main,
+      theme.palette.success.main,
     ],
     dataLabels: {
       enabled: false,
@@ -40,7 +46,23 @@ const useChartOptions = () => {
       },
     },
     legend: {
-      show: false,
+      show: true,
+      position: "top",
+      horizontalAlign: "center",
+      floating: false,
+      offsetY: 0,
+      labels: {
+        colors: theme.palette.text.primary,
+      },
+      markers: {
+        width: 10,
+        height: 10,
+        radius: 20,
+      },
+      itemMargin: {
+        horizontal: 15,
+        vertical: 5,
+      },
     },
     plotOptions: {
       bar: {
@@ -64,20 +86,6 @@ const useChartOptions = () => {
         color: theme.palette.divider,
         show: true,
       },
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
       labels: {
         offsetY: 5,
         style: {
@@ -97,26 +105,34 @@ const useChartOptions = () => {
   };
 };
 
-export const OverviewSales = (props) => {
-  const { chartSeries, sx } = props;
-  const chartOptions = useChartOptions();
+export const OverviewSales = () => {
+  const { data } = useDataContext();
+  const tableData = data?.tableData?.length && data?.tableData;
 
-  return (
-    <Card sx={sx}>
+  const chartOptions = useChartOptions();
+  let newChartOptions = [];
+  let newTableData = [];
+  const legendNames = ["Name1", "Name2", "Name3", "Name4", "Name5"];
+
+  if (tableData?.length) {
+    newChartOptions = {
+      ...chartOptions,
+      xaxis: { ...chartOptions.xaxis, categories: getCategories(tableData) },
+    };
+    newTableData = formatData(tableData);
+  }
+
+  return tableData?.length ? (
+    <Card>
       <CardContent>
         <Chart
           height={350}
-          options={chartOptions}
-          series={chartSeries}
+          options={newChartOptions}
+          series={newTableData}
           type="bar"
           width="100%"
         />
       </CardContent>
     </Card>
-  );
-};
-
-OverviewSales.protoTypes = {
-  chartSeries: PropTypes.array.isRequired,
-  sx: PropTypes.object,
+  ) : null;
 };
