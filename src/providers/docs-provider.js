@@ -11,8 +11,10 @@ import { SPREAD_SHEET_ID, API_KEY } from "../utils/variables/s-variables";
 import { AuthContext } from "../contexts/auth-context";
 
 const HANDLERS = {
-  INITIALIZE: "INITIALIZE",
+  STOP_LOADING: "STOP_LOADING",
+  START_LOADING: "START_LOADING",
   SET_DATA: "SET_DATA",
+  RESET_DATA: "RESET_DATA",
 };
 
 const initialState = {
@@ -21,9 +23,13 @@ const initialState = {
 };
 
 const handlers = {
-  [HANDLERS.INITIALIZE]: (state) => ({
+  [HANDLERS.STOP_LOADING]: (state) => ({
     ...state,
     isLoading: false,
+  }),
+  [HANDLERS.START_LOADING]: (state) => ({
+    ...state,
+    isLoading: true,
   }),
   [HANDLERS.SET_DATA]: (state, action) => ({
     ...state,
@@ -31,6 +37,10 @@ const handlers = {
       ...state.data,
       ...action.payload,
     },
+  }),
+  [HANDLERS.RESET_DATA]: (state) => ({
+    ...state,
+    data: { ...initialState.data }, // здесь initialState.data - ваше начальное состояние данных
   }),
 };
 
@@ -45,9 +55,12 @@ export const DocxProvider = ({ children }) => {
   const [dataDocs, setDataDocs] = useState([]);
 
   const fetchData = () => {
+    dispatch({
+      type: HANDLERS.START_LOADING,
+    });
     axios
       .get(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SPREAD_SHEET_ID}/values/userData!A1:E?key=${API_KEY}`
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREAD_SHEET_ID}/values/userData!A1:F?key=${API_KEY}`
       )
       .then((response) => {
         const initialData = response.data;
@@ -56,16 +69,26 @@ export const DocxProvider = ({ children }) => {
           initialData?.values?.filter((item) => item.includes(user?.email))[0];
         setDataDocs(data);
 
-        dispatch({
-          type: HANDLERS.SET_DATA,
-          payload: {
-            iframeLinks: {
-              iframeLink1: data[3],
-              iframeLink2: data[4],
+        if (data?.length) {
+          dispatch({
+            type: HANDLERS.SET_DATA,
+            payload: {
+              iframeLinks: {
+                iframeLink1: data[3],
+                iframeLink2: data[4],
+              },
+              email: data[0],
+              isAdmin: !!data[5],
             },
-            email: data[0],
-          },
-        });
+          });
+        } else {
+          dispatch({
+            type: HANDLERS.RESET_DATA,
+          });
+          dispatch({
+            type: HANDLERS.STOP_LOADING,
+          });
+        }
       })
       .catch((error) => {
         console.error("Error on the first query:", error);
@@ -79,7 +102,7 @@ export const DocxProvider = ({ children }) => {
   }, [user?.email]);
 
   const fetchDataTable = () => {
-    axios
+    return axios
       .get(
         `https://sheets.googleapis.com/v4/spreadsheets/${SPREAD_SHEET_ID}/values/${dataDocs[1]}!A:Z?key=${API_KEY}`
       )
@@ -95,11 +118,7 @@ export const DocxProvider = ({ children }) => {
   };
 
   const fetchDataBoxes = () => {
-    dispatch({
-      type: HANDLERS.START_LOADING,
-    });
-
-    axios
+    return axios
       .get(
         `https://sheets.googleapis.com/v4/spreadsheets/${SPREAD_SHEET_ID}/values/${dataDocs[2]}!A:Z?key=${API_KEY}`
       )
@@ -108,11 +127,6 @@ export const DocxProvider = ({ children }) => {
           type: HANDLERS.SET_DATA,
           payload: { boxesData: response?.data?.values },
         });
-        setTimeout(() => {
-          dispatch({
-            type: HANDLERS.STOP_LOADING,
-          });
-        }, 10000);
       })
       .catch((error) => {
         console.error("Error on the third query:", error);
@@ -121,8 +135,15 @@ export const DocxProvider = ({ children }) => {
 
   useEffect(() => {
     if (dataDocs?.length) {
-      fetchDataTable();
-      fetchDataBoxes();
+      Promise.all([fetchDataTable(), fetchDataBoxes()])
+        .then(() => {
+          dispatch({
+            type: HANDLERS.STOP_LOADING,
+          });
+        })
+        .catch((error) => {
+          console.error("Error on loading data:", error);
+        });
     }
   }, [dataDocs]);
 

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import { CacheProvider } from "@emotion/react";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -10,9 +11,9 @@ import { useNProgress } from "src/hooks/use-nprogress";
 import { createTheme } from "src/theme";
 import { createEmotionCache } from "src/utils/create-emotion-cache";
 import { DocxProvider } from "src/providers/docs-provider";
+import { SnackbarProvider } from "src/contexts/snackbar-context";
 
 import "simplebar-react/dist/simplebar.min.css";
-import {useEffect, useState} from "react";
 
 const clientSideEmotionCache = createEmotionCache();
 
@@ -22,7 +23,7 @@ const App = (props) => {
   const [isDarkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-    setDarkMode(window.localStorage.getItem("isDarkMode")  === "true" || false);
+    setDarkMode(window.localStorage.getItem("isDarkMode") === "true" || false);
   }, []);
 
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
@@ -41,20 +42,26 @@ const App = (props) => {
       </Head>
       <LocalizationProvider dateAdapter={AdapterDateFns} dir="rtl">
         <AuthProvider>
-          <DocxProvider>
-            <ThemeProvider theme={theme}>
-              <CssBaseline />
-              <AuthConsumer>
-                {(auth) =>
-                  auth.isLoading ? (
-                    <SplashScreen />
-                  ) : (
-                    getLayout(<Component {...pageProps} />, isDarkMode, setDarkMode)
-                  )
-                }
-              </AuthConsumer>
-            </ThemeProvider>
-          </DocxProvider>
+          <SnackbarProvider>
+            <DocxProvider>
+              <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <AuthConsumer>
+                  {(auth) =>
+                    auth.isLoading ? (
+                      <SplashScreen />
+                    ) : (
+                      getLayout(
+                        <Component {...pageProps} />,
+                        isDarkMode,
+                        setDarkMode
+                      )
+                    )
+                  }
+                </AuthConsumer>
+              </ThemeProvider>
+            </DocxProvider>
+          </SnackbarProvider>
         </AuthProvider>
       </LocalizationProvider>
     </CacheProvider>
