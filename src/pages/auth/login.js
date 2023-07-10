@@ -43,7 +43,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>Login | Devias Kit</title>
+        <title>Login | My app</title>
       </Head>
       <Box
         sx={{

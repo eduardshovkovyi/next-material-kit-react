@@ -10,10 +10,11 @@ import LoadingComponent from "src/components/loader";
 
 const Page = () => {
   const { data, isLoading } = useDataContext();
-  console.log("isLoading", isLoading);
+
   if (isLoading) {
     return <LoadingComponent />;
   }
+
   return (
     <>
       <Head>

@@ -1,9 +1,14 @@
 import { Box } from "@mui/material";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { useDataContext } from "src/providers/docs-provider";
+import LoadingComponent from "src/components/loader";
 
 const Page = () => {
   const { data } = useDataContext();
+
+  if (!data?.iframeLinks?.iframeLink2) {
+    return <LoadingComponent />;
+  }
 
   return (
     <Box
@@ -28,6 +33,10 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page, isDarkMode, setDarkMode) => (
+  <DashboardLayout isDarkMode={isDarkMode} setDarkMode={setDarkMode}>
+    {page}
+  </DashboardLayout>
+);
 
 export default Page;

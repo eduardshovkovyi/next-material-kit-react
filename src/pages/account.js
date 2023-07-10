@@ -9,17 +9,21 @@ import { useContext, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useDataContext } from "src/providers/docs-provider";
 import { SnackbarContext } from "src/contexts/snackbar-context";
+import "firebase/functions";
+import { getFunctions, httpsCallable } from "firebase/functions";
 
+const functions = getFunctions();
 const Page = () => {
   const router = useRouter();
   const { data } = useDataContext();
 
-  const auth = useAuth();
   const { showSuccess, showError, openSnackbar, message, isError } =
     useContext(SnackbarContext);
 
+  const userUID = JSON.parse(window.localStorage.getItem("user"))?.uid;
+
   useEffect(() => {
-    if (!data?.isAdmin) {
+    if (data?.length && !data?.isAdmin) {
       router.push("/");
     }
   }, [data, router]);
@@ -37,20 +41,28 @@ const Page = () => {
         .email("Must be a valid email")
         .max(30)
         .required("Email is required"),
-      password: Yup.string().max(30).required("Password is required"),
+      password: Yup.string().max(30).min(6).required("Password is required"),
     }),
     onSubmit: async (values, helpers) => {
-      try {
-        await auth.signUp(values.name, values.email, values.password);
-        showSuccess();
-        helpers.resetForm();
-      } catch (err) {
-        console.log("err", err);
-        showError(err);
-        helpers.setStatus({ success: false });
-        helpers.setErrors({ submit: err.message });
-        helpers.setSubmitting(false);
-      }
+      const addAdminRole = httpsCallable(functions, "createUser");
+      addAdminRole({
+        uid: userUID,
+        email: values?.email,
+        password: values?.password,
+        full_name: values?.name,
+      })
+        .then((result) => {
+          console.log("result", result);
+          if (result?.data?.isCreated) {
+            showSuccess();
+            helpers.resetForm();
+          } else {
+            showError(result?.data?.message);
+          }
+        })
+        .catch((error) => {
+          showError(error);
+        });
     },
   });
 
@@ -141,6 +153,10 @@ const Page = () => {
   );
 };
 
-Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+Page.getLayout = (page, isDarkMode, setDarkMode) => (
+  <DashboardLayout isDarkMode={isDarkMode} setDarkMode={setDarkMode}>
+    {page}
+  </DashboardLayout>
+);
 
 export default Page;

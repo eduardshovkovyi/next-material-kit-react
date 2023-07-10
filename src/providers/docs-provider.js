@@ -6,9 +6,12 @@ import {
   useState,
 } from "react";
 import axios from "axios";
+import { getFunctions, httpsCallable } from "firebase/functions";
 
-import { SPREAD_SHEET_ID, API_KEY } from "../utils/variables/s-variables";
-import { AuthContext } from "../contexts/auth-context";
+import { SPREAD_SHEET_ID, API_KEY } from "src/utils/variables/s-variables";
+import { AuthContext } from "src/contexts/auth-context";
+
+const functions = getFunctions();
 
 const HANDLERS = {
   STOP_LOADING: "STOP_LOADING",
@@ -53,6 +56,7 @@ export const DocxProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { user } = useContext(AuthContext);
   const [dataDocs, setDataDocs] = useState([]);
+  const userUID = JSON.parse(window.localStorage.getItem("user"))?.uid;
 
   const fetchData = () => {
     dispatch({
@@ -78,7 +82,6 @@ export const DocxProvider = ({ children }) => {
                 iframeLink2: data[4],
               },
               email: data[0],
-              isAdmin: !!data[5],
             },
           });
         } else {
@@ -133,6 +136,23 @@ export const DocxProvider = ({ children }) => {
       });
   };
 
+  const getIsAdmin = async () => {
+    try {
+      const addAdminRole = httpsCallable(functions, "checkAdminRole");
+      const result = await addAdminRole({
+        uid: userUID,
+      });
+      dispatch({
+        type: HANDLERS.SET_DATA,
+        payload: {
+          isAdmin: result?.data?.isAdmin,
+        },
+      });
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   useEffect(() => {
     if (dataDocs?.length) {
       Promise.all([fetchDataTable(), fetchDataBoxes()])
@@ -144,6 +164,7 @@ export const DocxProvider = ({ children }) => {
         .catch((error) => {
           console.error("Error on loading data:", error);
         });
+      getIsAdmin();
     }
   }, [dataDocs]);
 

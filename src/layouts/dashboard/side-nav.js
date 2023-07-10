@@ -37,10 +37,7 @@ export const SideNav = (props) => {
 
   const handleSignOut = useCallback(() => {
     auth.signOut();
-    router.push("/auth/login");
-    window.localStorage.setItem("authenticated", "false");
-    window.localStorage.setItem("user", null);
-  }, [onClose, auth, router]);
+  }, [auth, router]);
 
   const content = (
     <Scrollbar

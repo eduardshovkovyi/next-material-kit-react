@@ -9,6 +9,7 @@ import PropTypes from "prop-types";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  onAuthStateChanged,
 } from "firebase/auth";
 import { getDatabase, ref, update, set } from "firebase/database";
 import { useRouter } from "next/router";
@@ -91,47 +92,32 @@ export const AuthProvider = (props) => {
   const { children } = props;
   const [state, dispatch] = useReducer(reducer, initialState);
   const router = useRouter();
-  const initialized = useRef(false);
-  const initialize = async () => {
-    // Prevent from calling twice in development mode with React.StrictMode enabled
-    if (initialized.current) {
-      return;
-    }
 
-    initialized.current = true;
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user && window.localStorage.getItem("authenticated") === "true") {
+        if (router.pathname === "/auth/login") {
+          router.push("/");
+        }
+        const user = JSON.parse(window.localStorage.getItem("user"));
 
-    let isAuthenticated = false;
-
-    try {
-      isAuthenticated = window.localStorage.getItem("authenticated") === "true";
-    } catch (err) {
-      console.error(err);
-    }
-
-    if (isAuthenticated) {
-      if (router.pathname === "/auth/login") {
-        router.push("/");
+        dispatch({
+          type: HANDLERS.INITIALIZE,
+          payload: user,
+        });
+      } else {
+        if (router.pathname !== "/auth/login") {
+          router.push("/auth/login");
+        }
+        window.localStorage.setItem("authenticated", "false");
+        dispatch({
+          type: HANDLERS.INITIALIZE,
+        });
       }
-      const user = JSON.parse(window.localStorage.getItem("user"));
+    });
 
-      dispatch({
-        type: HANDLERS.INITIALIZE,
-        payload: user,
-      });
-    } else {
-      dispatch({
-        type: HANDLERS.INITIALIZE,
-      });
-    }
-  };
-
-  useEffect(
-    () => {
-      initialize();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+    return () => unsubscribe();
+  }, [auth]);
 
   const signIn = (email, password) => {
     return new Promise((resolve, reject) => {
@@ -158,9 +144,13 @@ export const AuthProvider = (props) => {
   };
 
   const signOut = () => {
+    auth.signOut();
+    window.localStorage.setItem("authenticated", "false");
+    window.localStorage.setItem("user", null);
     dispatch({
       type: HANDLERS.SIGN_OUT,
     });
+    router.push("/auth/login");
   };
 
   const signUp = (full_name, email, password) => {

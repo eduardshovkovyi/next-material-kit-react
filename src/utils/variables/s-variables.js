@@ -3,6 +3,7 @@ export const API_KEY = "AIzaSyAJTSGgNzTDRc009AFq15DYbLxcZ649MJg";
 
 export const firebaseConfig = {
   apiKey: "AIzaSyDUZXTVffXD8Rjf5dSJzZPTJJfTnOBwpno",
+  databaseURL: "https://auth-bd8b7-default-rtdb.firebaseio.com",
   authDomain: "auth-bd8b7.firebaseapp.com",
   projectId: "auth-bd8b7",
   storageBucket: "auth-bd8b7.appspot.com",

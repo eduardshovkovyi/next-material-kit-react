@@ -22,9 +22,6 @@ export const AccountPopover = (props) => {
   const handleSignOut = useCallback(() => {
     onClose?.();
     auth.signOut();
-    router.push("/auth/login");
-    window.localStorage.setItem("authenticated", "false");
-    window.localStorage.setItem("user", null);
   }, [onClose, auth, router]);
 
   return (
